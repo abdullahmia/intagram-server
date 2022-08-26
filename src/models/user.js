@@ -21,7 +21,7 @@ const userSchema = new Schema(
             type: String,
             required: true,
         },
-        photo: {
+        image: {
             type: String,
         },
         phone: {
@@ -50,6 +50,10 @@ const userSchema = new Schema(
                 ref: "User",
             },
         ],
+        isDeactivate: {
+            type: Boolean,
+            default: false,
+        },
     },
     { timestamps: true }
 );

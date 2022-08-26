@@ -51,13 +51,20 @@ module.exports.login = async (req, res) => {
         let isValidPassword = await user.isValidPassword(password);
         if (isValidPassword) {
             const token = genarateToken(
-                { id: user._id, fullName: user.fullName },
+                {
+                    id: user._id,
+                    fullName: user.fullNam,
+                    email: user.email,
+                    image: user.image,
+                },
                 "7d"
             );
             return res.send({
                 id: user._id,
                 username: user.username,
                 fullName: user.fullName,
+                image: user.image,
+                email: user.email,
                 token: token,
             });
         } else {
@@ -65,5 +72,44 @@ module.exports.login = async (req, res) => {
         }
     } catch (err) {
         return res.status(500).json({ message: err.message });
+    }
+};
+
+// chage password
+module.exports.changePassword = async (req, res) => {
+    try {
+        const { oldPassword, newPassword, confirmPassword } = req.body;
+        if (oldPassword && newPassword && confirmPassword) {
+            if (newPassword === confirmPassword) {
+                let user = req.user;
+                user = await User.findOne({ _id: user.id, email: user.email });
+                let isValidPassword = await user.isValidPassword(oldPassword);
+                if (!isValidPassword) {
+                    return res.status(401).json({
+                        success: false,
+                        message: "Old password incorrect.",
+                    });
+                }
+
+                user.password = confirmPassword;
+                await user.save();
+                return res.status(200).json({
+                    success: true,
+                    message: "Password has been chenged",
+                });
+            } else {
+                return res.status(400).json({
+                    success: false,
+                    message: "Password & confrim password not matched.",
+                });
+            }
+        } else {
+            return res.status(400).json({
+                error: true,
+                message: "Field required.",
+            });
+        }
+    } catch (err) {
+        return res.status(500).json({ msg: err.message });
     }
 };
