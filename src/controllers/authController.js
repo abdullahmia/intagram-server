@@ -1,5 +1,7 @@
 const { genarateToken } = require("../lib/jwt");
-const User = require("../models/user");
+const { User, Token } = require("../models/user");
+const crypto = require("crypto");
+const sendMail = require("../lib/mailer");
 
 // register
 module.exports.register = async (req, res) => {
@@ -107,6 +109,77 @@ module.exports.changePassword = async (req, res) => {
             return res.status(400).json({
                 error: true,
                 message: "Field required.",
+            });
+        }
+    } catch (err) {
+        return res.status(500).json({ msg: err.message });
+    }
+};
+
+// Password reset email send
+module.exports.forgotPasswordEmailSend = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(404).json({
+                error: true,
+                message: "Field required.",
+            });
+        }
+
+        const user = await User.findOne({ email: email });
+        if (!user) {
+            return res.status(404).json({
+                error: true,
+                message: "User not found with email.",
+            });
+        }
+
+        let token = await Token.findOne({ user: user.id });
+        if (!token) {
+            token = new Token({
+                user: user.id,
+                token: crypto.randomBytes(32).toString("hex"),
+            });
+            await token.save();
+        }
+
+        const url = `${process.env.BASE_URL}/reset-password/${user.id}/${token.token}`;
+        // send password rest mail
+        // passwordResetMail(user.email, url);
+        sendMail(user.email, "Password reset", url);
+
+        return res.status(200).json({
+            error: false,
+            message: "Password reset email has been sent on your email.",
+        });
+    } catch (err) {
+        return res.status(500).json({ msg: err.message });
+    }
+};
+
+// set new password for a user
+module.exports.setPassword = async (req, res) => {
+    try {
+        const { user, token } = req.params;
+        const { newPassword, confirmPassword } = req.body;
+
+        // find the user
+        let getUser = await User.findOne({ _id: user });
+        let userToken = await Token.findOne({ token: token });
+        console.log(getUser, userToken);
+        if (getUser && userToken) {
+            if (newPassword === confirmPassword) {
+                getUser.password = confirmPassword;
+                await getUser.save();
+                await Token.findOneAndDelete({ user: getUser._id });
+                return res.status(200).json({
+                    message: "Password has been changed",
+                });
+            }
+        } else {
+            return res.status(400).json({
+                message: "Invalid password reset link",
             });
         }
     } catch (err) {

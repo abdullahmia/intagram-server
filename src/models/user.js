@@ -58,6 +58,24 @@ const userSchema = new Schema(
     { timestamps: true }
 );
 
+// token schela
+const tokenSchema = Schema(
+    {
+        user: {
+            type: Types.ObjectId,
+            ref: "User",
+            requried: true,
+            uniqe: true,
+        },
+        token: {
+            type: String,
+            uniqe: true,
+            requierd: true,
+        },
+    },
+    { timestamp: true }
+);
+
 userSchema.pre("save", async function (next) {
     const user = this;
     const hash = await bcrypt.hash(user.password, 10);
@@ -73,4 +91,5 @@ userSchema.methods.isValidPassword = async function (password) {
 };
 
 const User = model("User", userSchema);
-module.exports = User;
+const Token = model("Token", tokenSchema);
+module.exports = { User, Token };
