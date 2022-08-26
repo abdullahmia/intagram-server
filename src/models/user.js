@@ -54,6 +54,10 @@ const userSchema = new Schema(
             type: Boolean,
             default: false,
         },
+        isLock: {
+            type: Boolean,
+            default: false,
+        },
     },
     { timestamps: true }
 );
