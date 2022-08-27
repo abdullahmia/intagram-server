@@ -11,7 +11,6 @@ module.exports.register = async (req, res) => {
         // check if user is already exist
         const isEmailUser = await User.findOne({ email });
         const isUsernameUser = await User.findOne({ username });
-        console.log(isEmailUser, isUsernameUser);
         if (isEmailUser) {
             return res.status(400).json({ message: "User is alrady exist" });
         }
@@ -168,7 +167,6 @@ module.exports.setPassword = async (req, res) => {
         // find the user
         let getUser = await User.findOne({ _id: user });
         let userToken = await Token.findOne({ token: token });
-        console.log(getUser, userToken);
         if (getUser && userToken) {
             if (newPassword === confirmPassword) {
                 getUser.password = confirmPassword;
