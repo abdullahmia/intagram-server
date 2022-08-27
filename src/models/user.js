@@ -80,12 +80,12 @@ const tokenSchema = Schema(
     { timestamp: true }
 );
 
-userSchema.pre("save", async function (next) {
-    const user = this;
-    const hash = await bcrypt.hash(user.password, 10);
-    this.password = hash;
-    next();
-});
+// userSchema.pre("save", async function (next) {
+//     const user = this;
+//     const hash = await bcrypt.hash(user.password, 10);
+//     this.password = hash;
+//     next();
+// });
 
 // validate the password
 userSchema.methods.isValidPassword = async function (password) {

@@ -2,6 +2,7 @@ const { genarateToken } = require("../lib/jwt");
 const { User, Token } = require("../models/user");
 const crypto = require("crypto");
 const sendMail = require("../lib/mailer");
+const { hash } = require("../utils/hash");
 
 // register
 module.exports.register = async (req, res) => {
@@ -20,12 +21,14 @@ module.exports.register = async (req, res) => {
                 .json({ message: "Username is already taken" });
         }
 
+        const hashPassword = hash(password);
+
         // create a new user
         const user = await new User({
             email,
             fullName,
             username,
-            password,
+            password: hashPassword,
         }).save();
 
         return res.send({
