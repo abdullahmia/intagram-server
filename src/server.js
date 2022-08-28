@@ -19,5 +19,5 @@ app.use("/api", routes);
 // server configuration
 const port = process.env.PORT || 8000;
 app.listen(port, () => {
-    console.log(`server is ruiing at http://localhost:${port}`);
+    console.log(`server is running at http://localhost:${port}`);
 });

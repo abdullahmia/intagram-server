@@ -3,6 +3,7 @@ const { User, Token } = require("../models/user");
 const crypto = require("crypto");
 const sendMail = require("../lib/mailer");
 const { hash } = require("../utils/hash");
+const bcrypt = require("bcryptjs");
 
 // register
 module.exports.register = async (req, res) => {
@@ -21,14 +22,14 @@ module.exports.register = async (req, res) => {
                 .json({ message: "Username is already taken" });
         }
 
-        const hashPassword = hash(password);
+        const hash = await bcrypt.hash(password, 10);
 
         // create a new user
         const user = await new User({
             email,
             fullName,
             username,
-            password: hashPassword,
+            password: hash,
         }).save();
 
         return res.send({
