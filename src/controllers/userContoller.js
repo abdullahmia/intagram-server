@@ -1,5 +1,6 @@
 const { User } = require("../models/user");
 const cloudinary = require("../lib/cloudinary");
+const Post = require("../models/post");
 
 module.exports.getUser = async (req, res) => {
     try {
@@ -7,7 +8,8 @@ module.exports.getUser = async (req, res) => {
         const user = await User.findOne({ username: username })
             .select("-password")
             .populate("followers following", "-password");
-        return res.status(200).json(user);
+        const posts = await Post.find({ user: user._id }).sort("-createdAt");
+        return res.status(200).json({ user, posts });
     } catch (err) {
         return res.status(500).json({ msg: err.message });
     }
