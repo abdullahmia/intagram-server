@@ -2,7 +2,6 @@ const { genarateToken } = require("../lib/jwt");
 const { User, Token } = require("../models/user");
 const crypto = require("crypto");
 const sendMail = require("../lib/mailer");
-const { hash } = require("../utils/hash");
 const bcrypt = require("bcryptjs");
 
 // register
@@ -97,7 +96,10 @@ module.exports.changePassword = async (req, res) => {
                     });
                 }
 
-                user.password = confirmPassword;
+                // hashing the password
+                const hash = await bcrypt.hash(confirmPassword, 10);
+
+                user.password = hash;
                 await user.save();
                 return res.status(200).json({
                     success: true,
@@ -173,7 +175,8 @@ module.exports.setPassword = async (req, res) => {
         let userToken = await Token.findOne({ token: token });
         if (getUser && userToken) {
             if (newPassword === confirmPassword) {
-                getUser.password = confirmPassword;
+                const hash = await bcrypt.hash(confirmPassword, 10);
+                getUser.password = hash;
                 await getUser.save();
                 await Token.findOneAndDelete({ user: getUser._id });
                 return res.status(200).json({
