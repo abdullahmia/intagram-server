@@ -43,3 +43,61 @@ module.exports.getPosts = async (req, res) => {
         return res.status(500).json({ msg: err.message });
     }
 };
+
+// like a post
+module.exports.like = async (req, res) => {
+    try {
+        const post = await Post.findOne({
+            _id: req.params.id,
+            likes: req.user.id,
+        });
+        if (post) {
+            return res
+                .status(200)
+                .json({ message: "You'v already like this post" });
+        }
+
+        // like this post
+        const like = await Post.findOneAndUpdate(
+            { _id: req.params.id },
+            {
+                $push: {
+                    likes: req.user.id,
+                },
+            },
+            { new: true }
+        );
+
+        if (!like)
+            return res.status(404).json({ message: "Post does not exist" });
+
+        return res
+            .status(200)
+            .json({ like: true, message: "successfully liked" });
+    } catch (err) {
+        return res.status(500).json({ msg: err.message });
+    }
+};
+
+// unlieke psot
+module.exports.unlike = async (req, res) => {
+    try {
+        const unlike = await Post.findOneAndUpdate(
+            { _id: req.params.id },
+            { $pull: { likes: req.user.id } },
+            { new: true }
+        );
+
+        if (!unlike)
+            return res
+                .status(404)
+                .json({ message: "Post does not exist", isPost: false });
+
+        return res.status(200).json({
+            message: "Successfully unliked",
+            unlike: true,
+        });
+    } catch (err) {
+        return res.status(500).json({ msg: err.message });
+    }
+};

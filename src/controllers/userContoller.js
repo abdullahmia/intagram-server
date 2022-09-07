@@ -8,6 +8,12 @@ module.exports.getUser = async (req, res) => {
         const user = await User.findOne({ username: username })
             .select("-password")
             .populate("followers following", "-password");
+        if (!user) {
+            return res.status(404).json({
+                isUser: false,
+                message: "User not found",
+            });
+        }
         const posts = await Post.find({ user: user._id }).sort("-createdAt");
         return res.status(200).json({ user, posts });
     } catch (err) {
